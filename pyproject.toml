@@ -4,38 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "embodiedskills"
-version = "0.2.0"
-description = "Closed-loop skill orchestration for vision-language-action agents."
+version = "0.3.0"
+description = "World Action Model-augmented cascaded skills for vision-language-action agents"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "numpy",
-    "openai>=1.0.0",
-    "pillow",
-    "pyyaml",
-    "rich>=13.0.0",
-]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "torch>=2.6", "pyyaml>=6"]
 
 [project.optional-dependencies]
-local = ["transformers", "torch"]
-vllm = ["vllm", "qwen-vl-utils"]
-openpi-torch = ["torch", "transformers==4.53.2", "safetensors"]
-vla-data = ["h5py", "opencv-python"]
+encoders = ["transformers>=4.56,<5", "pillow>=10"]
 
 [project.scripts]
-embodiedskills-run = "clawvla.scripts.run_loop:main"
-embodiedskills-run-vllm = "clawvla.scripts.run_loop_with_vllm:main"
-embodiedskills-collect-robotwin-subtasks = "clawvla.scripts.robotwin_collect_expert_subtasks:main"
-embodiedskills-collect-agent-trajectories = "clawvla.scripts.collect_agent_skill_sft_corpus:main"
-embodiedskills-collect-agent-engineering = "clawvla.scripts.collect_agent_skill_sft_pilot:main"
-embodiedskills-aggregate-recovery-trajectories = "clawvla.scripts.aggregate_agent_skill_sft_engineering:main"
-embodiedskills-build-agent-sft = "clawvla.scripts.build_agent_skill_sft_subset:main"
-embodiedskills-build-robotwin-vla-data = "clawvla.scripts.build_robotwin_repolished_pi05_dataset:main"
-embodiedskills-build-rmbench-vla-data = "clawvla.scripts.build_rmbench_task_pi05_dataset:main"
-embodiedskills-split-vla-tasks = "clawvla.scripts.prepare_robotwin_pi05_task_specialists:main"
-
-[tool.setuptools]
-package-dir = {"" = "src"}
+embodiedskills = "embodiedskills.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

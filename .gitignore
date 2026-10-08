@@ -1,59 +1,34 @@
-# Python
 __pycache__/
 *.py[cod]
 *.egg-info/
-.pytest_cache/
-.ruff_cache/
-.mypy_cache/
-.coverage
-htmlcov/
-build/
-dist/
-
-# Local environments and secrets
+.venv*/
 .env
 .env.*
 !.env.example
-
-# Runtime and training outputs
-tmp_runs/
-tmp_artifacts/
-artifacts/
+.cache/
+.ruff_cache/
+.pytest_cache/
+build/
+dist/
 data/
 datasets/
-runs/
 checkpoints/
+weights/
+runs/
 outputs/
+logs/
 wandb/
-ray_results/
-slurm-*.out
-*.out
-*.err
-*.log
-*.jsonl
-*.pid
-*.exit
-
-# Large model/checkpoint artifacts
-*.ckpt
 *.pt
 *.pth
+*.ckpt
 *.safetensors
-
-# Local-only overrides
-*.local
-*.local.*
-.codex/
-.envrc
-
-# Local dependency scratch space
-.deps/
-.local_archive/
+*.npz
+*.npy
 *.hdf5
 *.h5
+*.log
+*.zip
 *.mp4
-
-# Editor/system files
+*.pkl
+*.pickle
 .DS_Store
-.vscode/
-.idea/

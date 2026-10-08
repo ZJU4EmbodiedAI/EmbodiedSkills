@@ -1,7 +1,0 @@
-# Local scheduler/VLM serving environment.
-# Install this inside the existing vllm environment.
-vllm
-transformers
-torch
-pillow
-qwen-vl-utils

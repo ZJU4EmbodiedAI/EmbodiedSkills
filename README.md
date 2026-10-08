@@ -1,221 +1,175 @@
+<div align="center">
+
 # EmbodiedSkills
 
+### World Action Model-augmented Cascaded Skills for Vision-Language-Action Agent
+
+[Paper](https://arxiv.org/abs/2609.01281) · [Architecture](#architecture) · [Training](#training) · [Integration](docs/integration.md)
+
+**Anticipate action consequences. Compare policy proposals. Execute through shared skills.**
+
+</div>
+
+EmbodiedSkills augments frozen vision-language-action policies with predictive decision-making. Given a scene, a language instruction and a set of executable policy proposals, lightweight world action models anticipate the consequences of each candidate in a pretrained visual representation. A shared comparison head then combines outcome estimates, model disagreement and agreement in predicted effects to select the action to execute.
+
+The framework organizes this process into five cascaded stages—**Observe, Propose, Predict, Select and Execute**—connected through reusable skill interfaces. Candidate identity is preserved throughout the cascade, allowing continuous control policies and spatial manipulation policies to participate in the same feedback loop. Adaptation is concentrated in the consequence models and comparison head; the action policy, visual backbone and language encoder remain frozen.
+
 <p align="center">
-  <img src="docs/assets/teaser.png" width="100%" alt="EmbodiedSkills overview">
+  <img src="docs/assets/architecture.png" alt="EmbodiedSkills: five-stage skill loop, action-conditioned consequence prediction, ensemble comparison and branch-supervised learning" width="100%">
 </p>
 
-EmbodiedSkills is a closed-loop runtime for vision-language-action agents. A
-high-level VLM works through six stages: observation, planning, preflight,
-bounded execution, verification, and recovery. The runtime checks every skill
-request before it reaches the robot and records the result for the next model
-decision. Planning, verification, the low-level VLA policy, and the environment
-adapter share stable interfaces and can be trained or replaced independently.
+## Architecture
 
-This release contains the AgentLoop used in our experiments, adapters for
-RoboTwin 2.0, RMBench, and LIBERO, a persistent OpenPI/$\pi_{0.5}$ action
-backend, frame-aligned subtask training for $\pi_{0.5}$, and Qwen3-VL LoRA
-training from full AgentLoop trajectories. The Python package remains
-`clawvla` for compatibility with existing manifests and checkpoints; the
-distribution and repository are named `embodiedskills`.
+An embodied skill implements an operation with defined inputs and outputs. Stages establish the information dependencies between these operations, while backend adapters supply their implementations.
+
+| Stage | Skills | Output |
+| :--- | :--- | :--- |
+| **Observe** | Scene observation and context encoding | Visual features, instruction embedding, observable state and elapsed progress |
+| **Propose** | Frozen-policy candidate generation | Five executable actions, with the direct proposal at index zero |
+| **Predict** | Consequence prediction and outcome evaluation | Candidate-conditioned latent forecasts and scores from three independent WAMs |
+| **Select** | Predicted-effect comparison and score aggregation | One index into the original candidate set |
+| **Execute** | Native action dispatch | Environment feedback for the next decision |
+
+The release includes two consequence-model implementations. The **spatial model** conditions a token-level latent transition on candidate-context features and evaluates its predicted effect against the language goal. The **continuous model** encodes action chunks recurrently and predicts a pooled future visual representation. Both feed the same form of candidate-relative comparison. Frozen V-JEPA 2 and MiniLM provide the default observation representations.
+
+### Consequence-aware selection
+
+Three independently trained WAM members evaluate the same five proposals. Their mean outcome score is discounted by the population standard deviation, then expressed relative to the direct proposal and normalized within the candidate set. A lightweight comparator receives a 69-dimensional descriptor containing member scores, the mean and spread of predicted effects, directional agreement and effect magnitude.
+
+The comparator estimates four joint outcomes for the direct proposal and each alternative: both fail, only the alternative succeeds, only the direct proposal succeeds, and both succeed. The final score combines the normalized ensemble estimate with the predicted benefit of replacement:
+
+$$
+S^k = \widetilde{b}^{\,k} + 0.25\left(p_{01}^{\,k}-p_{10}^{\,k}\right),
+\qquad k^\star = \operatorname*{arg\,max}_k S^k.
+$$
+
+The direct candidate has score zero, and ties follow candidate order. Comparison operates entirely on predicted consequences and model scores. The selected action retains its original representation and is dispatched to the frozen policy's execution backend.
+
+### Branch-supervised learning
+
+Supervision comes from executing alternative candidates from matched starting states. The observation after each candidate provides a latent transition target; recorded branch outcomes provide action-quality supervision. The spatial model learns dynamics first, followed by joint consequence prediction and goal-conditioned evaluation. Continuous-action training additionally supports branch returns and expert-alignment targets.
+
+Once the three WAM members are trained, they are frozen and the comparison head learns the four joint outcome classes. Training uses task-balanced sampling, training-fitted feature statistics and an episode-disjoint validation partition. Future observations and recorded outcomes enter the learning objectives; deployed inference consumes the current context and proposed actions.
 
 ## Results
 
-| Benchmark | Evaluation | Reference | EmbodiedSkills |
-| --- | ---: | ---: | ---: |
-| RoboTwin 2.0 | 50 tasks, 100 episodes per task | $\pi_{0.5}$ 82.74 | **86.20** |
-| LIBERO | Spatial, Object, Goal, and Long | OpenPI 96.85 | **97.40** |
-| RMBench $M(n)$ | 4 memory-dependent tasks | X-VLA 7.3 | **12.5** |
+The paper evaluates consequence-aware policy augmentation across continuous control, spatial manipulation and long-horizon task chains.
 
-The controlled RoboTwin 2.0 study uses the same 50 tasks and 5,000 episodes for
-each setting. Full AgentLoop reaches 86.20%; removing intermediate verification
-reduces success to 48.2%, using the full task instruction in place of semantic
-subtasks reaches 34.4%, and limiting every subtask to one action chunk reaches
-19.5%.
+| Benchmark | Frozen policy | Direct policy | EmbodiedSkills | Gain |
+| :--- | :--- | ---: | ---: | ---: |
+| MetaWorld MT50 | π₀.₅ | 76.28% | **78.64%** | +2.36 pp |
+| CLIPort | CLIPort | 33.94% | **36.83%** | +2.89 pp |
+| CALVIN | FLOWER | 77.10% | **77.90%** | +0.80 pp |
 
-<p align="center">
-  <img src="docs/assets/results.png" width="96%" alt="RoboTwin, LIBERO, and AgentLoop ablation results">
-</p>
-
-## System
-
-<p align="center">
-  <img src="docs/assets/architecture.png" width="100%" alt="EmbodiedSkills architecture">
-</p>
-
-The VLM receives the task instruction, current images, world state, active plan,
-and compact loop history. It proposes a typed skill call. The guarded runtime
-checks phase compatibility, required inputs, freshness, action validity, and
-legal state transitions. A validated execution request is sent to the VLA
-backend as an active subgoal, current observation, robot state, and bounded
-action budget. The execution report and fresh verification images return to the
-AgentLoop, which can continue, advance, re-observe, recover, or replan.
-
-The local vLLM launcher keeps multiple LoRAs resident and routes model calls by
-component or skill. Adapter selection changes the served LoRA name without
-loading weights for every request.
-
-<p align="center">
-  <img src="docs/assets/examples.png" width="96%" alt="Successful RoboTwin execution examples">
-</p>
+MetaWorld and CLIPort report complete-task success; CALVIN reports completion of all five tasks in a chain. The paper describes the benchmark-specific proposal and intervention protocols. The training presets in this repository cover the spatial and continuous core models.
 
 ## Installation
 
-The runtime uses Python 3.12. Benchmark simulators, OpenPI, LLaMA-Factory, and
-vLLM have separate CUDA environments and are installed from their upstream
-repositories.
+Use Python 3.10 or newer and install a PyTorch build compatible with your CUDA driver. The core also runs on CPU.
 
 ```bash
-git clone https://github.com/DCDmllm/EmbodiedSkills.git
+git clone https://github.com/ZJU4EmbodiedAI/EmbodiedSkills.git
 cd EmbodiedSkills
-python -m venv .venv
-source .venv/bin/activate
 pip install -e .
-cp .env.example .env
 ```
 
-Fill in the repository, checkpoint, and endpoint paths in `.env`, then export
-them before loading a runtime config. Missing variables are reported when the
-config is read.
+For RGB and language feature extraction:
 
 ```bash
-set -a
-source .env
-set +a
+pip install -e '.[encoders]'
 ```
 
-## Running AgentLoop
-
-An OpenAI-compatible VLM endpoint and a persistent OpenPI worker are sufficient
-for the standard launcher:
-
-```bash
-embodiedskills-run \
-  --config configs/runtime/robotwin.json \
-  --instruction "Place the container on the plate." \
-  --artifact-prefix robotwin_example \
-  --max-steps 80 \
-  --run
-```
-
-`configs/runtime/rmbench.json` and `configs/runtime/libero.json` select the
-other environments. Subgoal verification controls local progress; final task
-success always comes from the benchmark evaluator.
-
-For a local Qwen3-VL model with resident LoRAs:
-
-```bash
-embodiedskills-run-vllm \
-  --base-config configs/runtime/robotwin.json \
-  --model Qwen/Qwen3-VL-8B-Instruct \
-  --served-model-name base \
-  --lora-module agent=/path/to/agent_skill_lora \
-  --model-route scheduler=agent \
-  --model-route vision=agent \
-  --model-route state=agent \
-  --model-route verifier=agent \
-  --model-route recovery=agent \
-  --gpus 0,1 \
-  --tensor-parallel-size 2 \
-  --instruction "Place the container on the plate." \
-  --max-steps 80 \
-  --run
-```
+Download the visual and language encoders before feature extraction. The default configuration uses `facebook/vjepa2-vitl-fpc64-256` and `sentence-transformers/all-MiniLM-L6-v2`. Encoder loading uses local model files or the Hugging Face cache. Benchmark environments, frozen action policies and their checkpoints are installed separately in their upstream environments.
 
 ## Training
 
-### Subtask-conditioned $\pi_{0.5}$
-
-RoboTwin demonstrations are collected from successful expert executions. Each
-subtask keeps its source HDF5, frame range, accepted instruction, and completion
-criterion. The loader samples the current frame, three RGB views, 14-dimensional
-robot state, current subtask, and at most 32 actions from the same segment. A
-short final window repeats the segment's last action, so its label never enters
-the next subtask.
+Training operates on feature archives containing aligned observations, policy candidates and branch supervision. The [data specification](docs/data.md) defines the fields, action representations and split requirements.
 
 ```bash
-bash scripts/collect_robotwin_expert_subtasks.sh \
-  --settings both \
-  --episodes-per-task 50 \
-  --workers 4 \
-  --gpus 0,1,2,3
+# Spatial candidate-conditioned WAMs and consensus head
+embodiedskills train \
+  --config configs/spatial.yaml \
+  --train data/spatial_train.npz \
+  --validation data/spatial_validation.npz \
+  --output outputs/spatial \
+  --device cuda:0
 
-python scripts/merge_robotwin_expert_subtasks.py \
-  --source data/run_a \
-  --source data/run_b \
-  --output-dir data/robotwin_merged
-
-embodiedskills-build-robotwin-vla-data \
-  --mapping data/accepted_subtask_mapping.jsonl \
-  --source-root data/robotwin_merged \
-  --split-manifest data/robotwin_merged/splits/task_split.json \
-  --output-dir data/pi05_subtasks
+# Continuous action-chunk WAMs and consensus head
+embodiedskills train \
+  --config configs/continuous.yaml \
+  --train data/continuous_train.npz \
+  --validation data/continuous_validation.npz \
+  --output outputs/continuous \
+  --device cuda:0
 ```
 
-RMBench uses the segment durations in its official `language_annotation.json`:
+Each command trains three WAM members and then the shared comparison head. Spatial training first learns the candidate-context encoder; an existing compatible encoder can be supplied with `--context-checkpoint`. Epochs, batch sizes, initialization seeds and action dimensions are configured in YAML. Dataset sizes are inferred from the input archives.
+
+The resulting `selector.pt` is a self-contained bundle of all three members, the comparison head and their normalization statistics. It can be moved between machines independently of the training directory. Visual and language backbone weights remain external.
+
+## Inference and evaluation
+
+For feature-based inference, the selector accepts only the current visual representation, observable state, instruction embedding, elapsed progress and candidate actions:
+
+```python
+from embodiedskills.runtime import Selector
+
+selector = Selector("outputs/spatial/selector.pt", device="cuda:0")
+result = selector.predict(
+    visual=current_visual_features,
+    state=observable_state,
+    language=instruction_features,
+    progress=elapsed_progress,
+    actions=candidate_actions,
+)
+selected_indices = result["selected"]
+```
+
+All inputs have a leading batch dimension. For continuous actions, an optional binary `mask` specifies valid steps in each chunk. [Integration examples](docs/integration.md) describe native action encodings, policy sampling and the shared execution loop.
+
+Cached-branch evaluation selects candidates from current inputs, then joins the recorded outcomes to compute aggregate and per-task success, rescues, harms and intervention counts:
 
 ```bash
-embodiedskills-build-rmbench-vla-data \
-  --source-root /path/to/rmbench/data/task_name/demo_clean \
-  --output-root data/rmbench_task_subtasks \
-  --val-episodes 5
+embodiedskills evaluate \
+  --checkpoint outputs/spatial/selector.pt \
+  --input data/spatial_test.npz \
+  --output outputs/spatial_test.json \
+  --device cuda:0
 ```
 
-OpenPI integration is documented in
-[`integrations/openpi/README.md`](integrations/openpi/README.md). The supplied
-recipe uses a 32-step action horizon, episode-level splits, FSDP, normalization
-statistics from the prepared dataset, and checkpoint initialization through
-OpenPI's standard trainer. Per-task specialist datasets can be prepared with
-`embodiedskills-split-vla-tasks`.
+The command evaluates the supplied recorded branches. Online closed-loop evaluation uses `run_loop` with a policy and environment adapter, collecting fresh observations after execution. Evaluation size follows the archive or the caller's episode list; `--limit` optionally restricts a cached evaluation.
 
-### Qwen3-VL AgentLoop LoRA
-
-The trajectory collector replays successful expert segments through the same
-AgentLoop prompt renderer and history compaction used at deployment. Training
-rows cover plan generation, observation, state updates, scheduling, preflight,
-execution, verification, and engineering recovery cases. Every plan-generation
-row and every accepted recovery row is retained; remaining skills are sampled
-across tasks, decision families, and history depths.
-
-```bash
-embodiedskills-collect-agent-trajectories \
-  --dataset-root data/robotwin_merged \
-  --repair-ledger data/subtask_repairs.jsonl \
-  --task-instruction-repairs data/task_instruction_repairs.jsonl \
-  --split-manifest data/robotwin_merged/splits/task_split.json \
-  --config configs/runtime/robotwin.json \
-  --output-dir data/qwen_agent_corpus
-
-embodiedskills-build-agent-sft \
-  --corpus-dir data/qwen_agent_corpus \
-  --engineering-dir data/qwen_agent_engineering \
-  --output-dir data/qwen_agent_skill \
-  --train-size 30000 \
-  --val-size 3000
-
-LLAMA_FACTORY_ROOT=/path/to/LLaMA-Factory \
-CUDA_VISIBLE_DEVICES=0,1,2,3 \
-bash scripts/train_qwen_agent_lora.sh
-```
-
-The default recipe uses Qwen3-VL-8B-Instruct, FlashAttention 2, DeepSpeed
-ZeRO-3, LoRA rank 64, a 65,536-token context, validation every 50 optimizer
-steps, and W&B logging. Configuration details and data contracts are in
-[`docs/training.md`](docs/training.md).
-
-## Repository layout
+## Repository
 
 ```text
-src/clawvla/               AgentLoop, runtime, skills, components, and adapters
-src/clawvla/training/      frame-aligned subtask dataset
-configs/runtime/           RoboTwin, RMBench, and LIBERO runtime configurations
-configs/qwen/              Qwen3-VL LoRA and DeepSpeed configuration
-integrations/openpi/       OpenPI dataset hook and training recipe
-scripts/                   collection, merge, and training wrappers
-docs/                      architecture, benchmark, and training notes
+configs/                    Spatial and continuous training presets
+docs/                       Data contracts, integration guide and architecture figure
+src/embodiedskills/
+  spatial.py                Spatial context, latent transition and goal-conditioned value
+  continuous.py             Recurrent action-chunk consequence model
+  consensus.py              Spatial predicted-effect comparison
+  continuous_consensus.py   Pooled-effect projection and comparison
+  vision.py, language.py    Frozen observation encoders
+  adapters.py, sampling.py  Native action representations and proposal generation helpers
+  runtime.py                Shared skill interface and decision loop
+  training.py, losses.py    WAM and comparator learning
+  checkpoint.py             Portable model bundles
+  migration.py              Conversion of compatible research checkpoints
+  data.py, cli.py           Feature archives and command-line entry points
 ```
 
-The release is focused on the supervised training and deployment path used by
-the paper. Historical RL experiments, generated datasets, checkpoints, videos,
-machine-specific paths, and fixed-sequence VLA replay programs are outside the
-source tree. Generated artifacts belong under `data/` or `artifacts/`, both of
-which are ignored by Git.
+The repository contains the model and runtime source, training configurations and usage documentation. Datasets, pretrained weights and generated run artifacts are stored outside the release tree.
+
+## Citation
+
+```bibtex
+@article{wang2026embodiedskills,
+  title={EmbodiedSkills: World Action Model-augmented Cascaded Skills for Vision-Language-Action Agent},
+  author={Wang, Wei and Zhang, Wenqiao and Lin, Yutong and Yuan, Yuqian and Lin, Tianwei
+          and Mao, Jinhao and Fan, Zhenxuan and Gao, Mingjian and Dai, Yang and Li, Wentong
+          and Lv, Zheqi and Dong, Zheng and Niu, Yingjie and Zhu, Jiaqi and Xiao, Jun
+          and Li, Chao and Zhuang, Yueting},
+  journal={arXiv preprint arXiv:2609.01281},
+  year={2026}
+}
+```

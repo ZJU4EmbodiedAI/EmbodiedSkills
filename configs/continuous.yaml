@@ -1,0 +1,26 @@
+family: continuous
+seed: 0
+member_seeds: [0, 1, 2]
+batch_size: 128
+model:
+  hidden: 192
+  success_priority: 4.0
+  outcome_change_standardized: true
+  detach_consequence_for_score: true
+  state_dim: 4
+  action_dim: 4
+  execution_horizon: 8
+member:
+  epochs: 30
+  learning_rate: 0.0003
+  expert_weight: 0.5
+consensus:
+  epochs: 40
+  batch_size: 128
+  samples_per_task: 256
+  learning_rate: 0.0003
+encoders:
+  visual_backbone: vjepa2
+  visual_model: facebook/vjepa2-vitl-fpc64-256
+  language_model: sentence-transformers/all-MiniLM-L6-v2
+  spatial_grid: 1

@@ -255,7 +255,7 @@ function showCase(id) {
     button.className = 'candidate-button';
     const role = index === activeCase.selected ? 'Selected' : index === 0 ? 'Direct' : 'Alternative';
     button.setAttribute('aria-label', `Inspect candidate A${index}, ${role.toLowerCase()}, score ${score.toFixed(3)}`);
-    button.innerHTML = `<span class="candidate-header">A${'₀₁₂₃₄'[index]}<small>${role}</small></span><span class="candidate-chart"><i style="--w:${Math.max(2, Math.abs(score)/maxScore*100)}%"></i></span><span class="candidate-score"><span>${score>=0?'+':''}${score.toFixed(3)}</span><span>${activeCase.outcomes[index] ? 'Success' : 'Unfinished'}</span></span>`;
+    button.innerHTML = `<span class="candidate-header">A${'₀₁₂₃₄'[index]}<small>${role}</small></span><span class="candidate-chart"><i style="--w:${Math.abs(score)/maxScore*100}%"></i></span><span class="candidate-score"><span>${score>=0?'+':''}${score.toFixed(3)}</span><span>${activeCase.outcomes[index] ? 'Success' : 'Unfinished'}</span></span>`;
     if (score < 0) button.classList.add('negative-score');
     button.addEventListener('click', () => inspectCandidate(index));
     container.append(button);

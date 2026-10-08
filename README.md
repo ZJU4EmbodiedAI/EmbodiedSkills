@@ -10,15 +10,19 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/assets/teaser.png" alt="EmbodiedSkills overview: a five-stage feedback loop augments frozen action policies with world action models" width="100%">
+</p>
+
 EmbodiedSkills augments frozen vision-language-action policies with predictive decision-making. Given a scene, a language instruction and a set of executable policy proposals, lightweight world action models anticipate the consequences of each candidate in a pretrained visual representation. A shared comparison head then combines outcome estimates, model disagreement and agreement in predicted effects to select the action to execute.
 
 The framework organizes this process into five cascaded stages—**Observe, Propose, Predict, Select and Execute**—connected through reusable skill interfaces. Candidate identity is preserved throughout the cascade, allowing continuous control policies and spatial manipulation policies to participate in the same feedback loop. Adaptation is concentrated in the consequence models and comparison head; the action policy, visual backbone and language encoder remain frozen.
 
+## Architecture
+
 <p align="center">
   <img src="docs/assets/architecture.png" alt="EmbodiedSkills: five-stage skill loop, action-conditioned consequence prediction, ensemble comparison and branch-supervised learning" width="100%">
 </p>
-
-## Architecture
 
 An embodied skill implements an operation with defined inputs and outputs. Stages establish the information dependencies between these operations, while backend adapters supply their implementations.
 
@@ -38,10 +42,10 @@ Three independently trained WAM members evaluate the same five proposals. Their 
 
 The comparator estimates four joint outcomes for the direct proposal and each alternative: both fail, only the alternative succeeds, only the direct proposal succeeds, and both succeed. The final score combines the normalized ensemble estimate with the predicted benefit of replacement:
 
-$$
-S^k = \widetilde{b}^{\,k} + 0.25\left(p_{01}^{\,k}-p_{10}^{\,k}\right),
-\qquad k^\star = \operatorname*{arg\,max}_k S^k.
-$$
+```math
+S^k = \widetilde{b}^k + 0.25 (p_{01}^k - p_{10}^k),
+\qquad k^\star = \arg\max_k S^k.
+```
 
 The direct candidate has score zero, and ties follow candidate order. Comparison operates entirely on predicted consequences and model scores. The selected action retains its original representation and is dispatched to the frozen policy's execution backend.
 
@@ -54,6 +58,10 @@ Once the three WAM members are trained, they are frozen and the comparison head 
 ## Results
 
 The paper evaluates consequence-aware policy augmentation across continuous control, spatial manipulation and long-horizon task chains.
+
+<p align="center">
+  <img src="docs/assets/results.png" alt="Policy augmentation comparisons on MetaWorld MT50, CLIPort and CALVIN" width="100%">
+</p>
 
 | Benchmark | Frozen policy | Direct policy | EmbodiedSkills | Gain |
 | :--- | :--- | ---: | ---: | ---: |

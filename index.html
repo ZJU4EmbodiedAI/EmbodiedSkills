@@ -52,7 +52,12 @@
   <div class="section-heading reveal"><h2>Five stages.<br><em>Always in the loop.</em></h2><p>Observation becomes a proposal.<br>Prediction informs a choice.<br>Execution creates the next observation.</p></div>
   <div class="loop-workspace reveal">
     <div class="loop-visual" data-stage="0">
-      <svg class="loop-wires" viewBox="0 0 650 600" aria-hidden="true"><defs><marker id="flow-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0 0 6 3 0 6" fill="none" stroke="currentColor"/></marker></defs><path class="loop-track" d="M325 69 C440 69 557 179 541 260 C570 358 502 487 445 501 C347 562 194 556 160 490 C65 425 64 304 106 245 C114 153 202 78 325 69Z"/><path class="loop-flow" d="M325 69 C440 69 557 179 541 260 C570 358 502 487 445 501 C347 562 194 556 160 490 C65 425 64 304 106 245 C114 153 202 78 325 69Z"/><circle cx="325" cy="306" r="178" class="inner-orbit"/><path class="spoke" d="M325 92V180M510 244l-74 26M438 479l-44-61M180 479l62-62M120 245l88 26"/></svg>
+      <svg class="loop-wires" viewBox="0 0 650 600" aria-hidden="true">
+        <circle class="loop-track" cx="325" cy="306" r="237"/>
+        <circle class="loop-flow" cx="325" cy="306" r="237" pathLength="100" transform="rotate(-90 325 306)"/>
+        <circle cx="325" cy="306" r="178" class="inner-orbit"/>
+        <path class="spoke" d="M325.000 128.000L325.000 93.000 M494.288 250.995L527.575 240.179 M429.626 450.005L450.198 478.321 M220.374 450.005L199.802 478.321 M155.712 250.995L122.425 240.179"/>
+      </svg>
       <div class="loop-core"><span class="micro" id="loop-core-label">CURRENT OBSERVATION</span><div class="loop-image"><img id="loop-image" src="assets/robot-before.webp" width="256" height="256" alt="Recorded robot observation illustrating the observe stage"><div class="latent-grid" aria-hidden="true"></div><div class="scan-line" aria-hidden="true"></div></div><p id="loop-core-caption">Scene + instruction + state</p><span class="core-bottom">FROZEN POLICY · LEARNED CONSEQUENCES</span></div>
       <div class="stage-tabs" role="tablist" aria-label="Stages of the decision loop">
         <button class="stage-node active" id="stage-0" role="tab" aria-selected="true" aria-controls="stage-description" data-stage="0"><span>01</span><b>Observe</b></button>

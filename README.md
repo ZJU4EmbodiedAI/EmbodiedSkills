@@ -4,7 +4,7 @@
 
 ### World Action Model-augmented Cascaded Skills for Vision-Language-Action Agent
 
-[Paper](https://arxiv.org/abs/2609.01281) · [Architecture](#architecture) · [Training](#training) · [Integration](docs/integration.md)
+[Project page](https://zju4embodiedai.github.io/EmbodiedSkills/) · [Paper](https://arxiv.org/abs/2609.01281) · [Architecture](#architecture) · [Training](#training) · [Integration](docs/integration.md)
 
 **Anticipate action consequences. Compare policy proposals. Execute through shared skills.**
 

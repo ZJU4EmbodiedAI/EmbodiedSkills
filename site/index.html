@@ -9,12 +9,12 @@
   <meta property="og:description" content="World Action Model-augmented Cascaded Skills for Vision-Language-Action Agent.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://zju4embodiedai.github.io/EmbodiedSkills/">
-  <meta property="og:image" content="https://zju4embodiedai.github.io/EmbodiedSkills/assets/social.jpg">
+  <meta property="og:image" content="https://zju4embodiedai.github.io/EmbodiedSkills/assets/social.jpg?v=20261009">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://zju4embodiedai.github.io/EmbodiedSkills/">
   <link rel="icon" type="image/svg+xml" href="assets/mark.svg">
   <link rel="preload" href="assets/fonts/manrope.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/robot-hero.webp" as="image">
+  <link rel="preload" href="assets/metaworld-hero.webp" as="image">
   <link rel="stylesheet" href="style.css">
   <title>EmbodiedSkills — Anticipate. Compare. Act.</title>
   <script>document.documentElement.classList.add('js');</script>
@@ -29,7 +29,7 @@
 </header>
 <main>
 <section class="hero dark" id="top" aria-labelledby="hero-title">
-  <div class="hero-photo" aria-hidden="true"><img src="assets/robot-hero.webp" width="660" height="540" alt="" fetchpriority="high"><div class="hero-photo-shade"></div></div>
+  <div class="hero-photo" aria-hidden="true"><img src="assets/metaworld-hero.webp" width="256" height="256" alt="" fetchpriority="high"><div class="hero-photo-shade"></div></div>
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-grid" aria-hidden="true"></div>
   <div class="hero-content">
@@ -37,7 +37,7 @@
     <h1 id="hero-title" class="hero-enter">Embodied<span>Skills</span><sup>↗</sup></h1>
     <div class="hero-copy hero-enter"><h2>Before the action,<br>consider the <em>consequence.</em></h2><p>World Action Model-augmented Cascaded Skills<br class="desktop-break"> for Vision-Language-Action Agent</p><div class="hero-links"><a class="button button-light" href="https://arxiv.org/abs/2609.01281" target="_blank" rel="noopener">Read the paper <span>↗</span></a><a class="text-link" href="https://github.com/ZJU4EmbodiedAI/EmbodiedSkills" target="_blank" rel="noopener">Explore the code <span>↗</span></a></div></div>
     <div class="hero-annotation" aria-hidden="true"><span class="target-bracket"></span><span>ACTION → CONSEQUENCE<br><b>Predict before execution.</b></span></div>
-    <div class="hero-bottom hero-enter"><a href="#overview" class="scroll-cue"><span class="scroll-line"></span>SCROLL TO DISCOVER</a><p>Recorded robot simulation.<br>Animated paths illustrate the method.</p><span class="hero-index">01 — 05 <i></i> A CONTINUOUS LOOP</span></div>
+    <div class="hero-bottom hero-enter"><a href="#overview" class="scroll-cue"><span class="scroll-line"></span>SCROLL TO DISCOVER</a><p>Recorded MetaWorld simulation.<br>Animated paths illustrate the method.</p><span class="hero-index">01 — 05 <i></i> A CONTINUOUS LOOP</span></div>
   </div>
 </section>
 
@@ -58,7 +58,7 @@
         <circle cx="325" cy="306" r="178" class="inner-orbit"/>
         <path class="spoke" d="M325.000 128.000L325.000 93.000 M494.288 250.995L527.575 240.179 M429.626 450.005L450.198 478.321 M220.374 450.005L199.802 478.321 M155.712 250.995L122.425 240.179"/>
       </svg>
-      <div class="loop-core"><span class="micro" id="loop-core-label">CURRENT OBSERVATION</span><div class="loop-image"><img id="loop-image" src="assets/robot-before.webp" width="256" height="256" alt="Recorded robot observation illustrating the observe stage"><div class="latent-grid" aria-hidden="true"></div><div class="scan-line" aria-hidden="true"></div></div><p id="loop-core-caption">Scene + instruction + state</p><span class="core-bottom">FROZEN POLICY · LEARNED CONSEQUENCES</span></div>
+      <div class="loop-core"><span class="micro" id="loop-core-label">CURRENT OBSERVATION</span><div class="loop-image"><img id="loop-image" src="assets/metaworld-before.webp" width="256" height="256" alt="Recorded MetaWorld basketball observation illustrating the observe stage"><div class="latent-grid" aria-hidden="true"></div><div class="scan-line" aria-hidden="true"></div></div><p id="loop-core-caption">Scene + instruction + state</p><span class="core-bottom">FROZEN POLICY · LEARNED CONSEQUENCES</span></div>
       <div class="stage-tabs" role="tablist" aria-label="Stages of the decision loop">
         <button class="stage-node active" id="stage-0" role="tab" aria-selected="true" aria-controls="stage-description" data-stage="0"><span>01</span><b>Observe</b></button>
         <button class="stage-node" id="stage-1" role="tab" aria-selected="false" aria-controls="stage-description" tabindex="-1" data-stage="1"><span>02</span><b>Propose</b></button>
@@ -120,8 +120,8 @@
 <section class="architecture section-pad" id="architecture">
   <div class="section-label reveal"><span>08 / THE COMPLETE PICTURE</span><span>OPEN THE FIGURES TO EXPLORE</span></div>
   <div class="section-heading reveal"><h2>One cascade.<br><em>Composable skills.</em></h2><p>Defined inputs and outputs keep policy proposals, predicted effects and executed actions connected across backends.</p></div>
-  <button class="figure-button architecture-figure reveal" data-figure="assets/architecture.webp" data-caption="EmbodiedSkills architecture: the five-stage loop, action-conditioned latent prediction, consequence agreement and branch-supervised learning."><img src="assets/architecture.webp" width="2048" height="1219" alt="Detailed EmbodiedSkills architecture from the paper" loading="lazy"><span class="figure-open">EXPAND ARCHITECTURE <span>↗</span></span></button>
-  <div class="figure-pair"><button class="figure-button reveal" data-figure="assets/teaser.webp" data-caption="EmbodiedSkills overview. Robot imagery illustrates recorded execution; candidate paths and latent displays are schematic."><span class="micro">THE SYSTEM OVERVIEW</span><img src="assets/teaser.webp" width="3840" height="2160" alt="EmbodiedSkills paper teaser" loading="lazy"><span class="figure-open">View overview ↗</span></button><button class="figure-button reveal" data-figure="assets/consequences.webp" data-caption="Predicted and observed latent changes in held-out CLIPort transitions, with spatial error visualizations."><span class="micro">PREDICTED & OBSERVED EFFECTS</span><img src="assets/consequences.webp" alt="Predicted latent changes compared with observed changes" loading="lazy"><span class="figure-open">Inspect consequences ↗</span></button></div>
+  <button class="figure-button architecture-figure reveal" data-figure="assets/architecture.webp?v=20261009" data-caption="EmbodiedSkills architecture: the five-stage loop, action-conditioned latent prediction, consequence agreement and branch-supervised learning."><img src="assets/architecture.webp?v=20261009" width="2048" height="1219" alt="Detailed EmbodiedSkills architecture from the paper" loading="lazy"><span class="figure-open">EXPAND ARCHITECTURE <span>↗</span></span></button>
+  <div class="figure-pair"><button class="figure-button reveal" data-figure="assets/teaser.webp?v=20261009" data-caption="EmbodiedSkills overview. Robot imagery shows a recorded MetaWorld basketball episode; candidate paths and latent displays are schematic."><span class="micro">THE SYSTEM OVERVIEW</span><img src="assets/teaser.webp?v=20261009" width="3840" height="2160" alt="EmbodiedSkills paper teaser" loading="lazy"><span class="figure-open">View overview ↗</span></button><button class="figure-button reveal" data-figure="assets/consequences.webp" data-caption="Predicted and observed latent changes in held-out CLIPort transitions, with spatial error visualizations."><span class="micro">PREDICTED & OBSERVED EFFECTS</span><img src="assets/consequences.webp" alt="Predicted latent changes compared with observed changes" loading="lazy"><span class="figure-open">Inspect consequences ↗</span></button></div>
 </section>
 
 <section class="research section-pad" id="research">
@@ -146,6 +146,6 @@
 <dialog id="figure-dialog" aria-labelledby="figure-caption"><div class="dialog-toolbar"><span>EMBODIEDSKILLS / RESEARCH FIGURE</span><button id="close-figure" class="small-button">Close <span>×</span></button></div><div class="dialog-image-wrap"><img id="dialog-image" alt=""></div><p id="figure-caption"></p></dialog>
 <div class="toast" role="status" aria-live="polite"></div>
 <noscript><p class="noscript-note">Interactive figures and replay controls require JavaScript. The paper, architecture, results table and resources are available below.</p></noscript>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=20261009"></script>
 </body>
 </html>

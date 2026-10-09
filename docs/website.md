@@ -24,6 +24,6 @@ GitHub Pages should use **Deploy from a branch → gh-pages → / (root)**. Its 
 
 ## Visual material
 
-All paper figures and robot observations are from the EmbodiedSkills project. Source images were converted to WebP; original experiment records and private filesystem paths are not part of the website. Images shown after CLIPort candidates are immediate post-action observations, while the displayed outcome labels describe the complete recorded branch. The website never presents an animated schematic as a generated future observation.
+All paper figures and robot observations are from the EmbodiedSkills project. The hero, loop observations, and robot panels in the teaser and architecture use the recorded MetaWorld basketball episode; the branch examples use recorded CLIPort observations. Source images were converted to WebP; original experiment records and private filesystem paths are not part of the website. Images shown after CLIPort candidates are immediate post-action observations, while the displayed outcome labels describe the complete recorded branch. The website never presents an animated schematic as a generated future observation.
 
 Manrope is self-hosted under the SIL Open Font License. Its license is included in `site/assets/fonts/OFL.txt`; the source is the [Google Fonts Manrope directory](https://github.com/google/fonts/tree/main/ofl/manrope). The interface, diagrams and motion design were implemented specifically for this project.
